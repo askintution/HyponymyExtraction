@@ -166,9 +166,11 @@ class BaiduBaike:
     def extract_baidu(self, selector):
         info_data = {}
         if selector.xpath('//h2/text()'):
+            # h2作为它的上级semantic
             info_data['current_semantic'] = selector.xpath('//h2/text()')[0].replace('    ', '').replace('（','').replace('）','')
         else:
             info_data['current_semantic'] = ''
+
         if info_data['current_semantic'] == '目录':
             info_data['current_semantic'] = ''
 
@@ -179,8 +181,13 @@ class BaiduBaike:
                 values = [value.xpath('string(.)').replace('\n', '') for value in li_result.xpath('./dd')]
                 for item in zip(attributes, values):
                     info_data[item[0].replace('    ', '')] = item[1].replace('    ', '')
+
+        print("info_data:%s" % info_data)
         return info_data
 
+    """
+    多义字的semantic查询
+    """
     def checkbaidu_polysemantic(self, selector):
         semantics = ['https://baike.baidu.com' + sem for sem in
                      selector.xpath("//ul[starts-with(@class,'polysemantList-wrapper')]/li/a/@href")]
@@ -188,6 +195,10 @@ class BaiduBaike:
         info_list = []
         if semantics:
             for item in zip(names, semantics):
+                print("***********************************")
+                print("semantic name:%s, url:%s" % (item[0], item[1]))
+                print("***********************************")
+
                 selector = etree.HTML(self.get_html(item[1]))
                 info_data = self.extract_baidu(selector)
                 info_data['current_semantic'] = item[0].replace('    ', '').replace('（','').replace('）','')
@@ -324,11 +335,12 @@ class SemanticBaike:
         concepts_all = []
 
         baidu_info = [[i['current_semantic'], i['tags']] for i in baidu.info_extract_baidu(word)]
-        hudong_info = [[i['current_semantic'], i['tags']] for i in hudong.info_extract_hudong(word)]
-        sogou_info = [[i['current_semantic'], i['tags']] for i in sogou.info_extract_sogou(word)]
+        # hudong_info = [[i['current_semantic'], i['tags']] for i in hudong.info_extract_hudong(word)]
+        # sogou_info = [[i['current_semantic'], i['tags']] for i in sogou.info_extract_sogou(word)]
         semantics += baidu_info
-        semantics += hudong_info
-        semantics += sogou_info
+        # semantics += hudong_info
+        # semantics += sogou_info
+        
         for i in semantics:
             instance = i[0]
             concept = i[1]

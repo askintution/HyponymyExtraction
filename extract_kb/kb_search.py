@@ -171,12 +171,17 @@ class SemanticBaike:
 
         return concept_dict, down_concept_dict
 
-    '''基于百科上下位词典进行遍历查询'''
+    '''
+    基于百科上下位词典进行遍历查询
+    去寻找概念的源头，往上追溯
+    '''
     def walk_up_hyper(self, word):
         f = open(self.tmp_file, 'w+')
         hyper_words = self.concept_dict.get(word, '')
         if not hyper_words:
             return
+
+        print("hyper_words:%s" % (hyper_words))
 
         for hyper in hyper_words:
             depth = 0
@@ -195,6 +200,7 @@ class SemanticBaike:
             return []
         for hyper in hyper_words:
             self.path.append('->'.join([word, hyper]))
+            print("word:%s, hyper:%s" % (word,hyper))
             for hyper_ in hyper_words:
                 if hyper == 'root':
                     return
